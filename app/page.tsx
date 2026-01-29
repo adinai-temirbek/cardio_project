@@ -22,7 +22,11 @@ import {
   ChevronRight,
   Loader2,
   Save,
-  X
+  X,
+  MessageCircle,
+  UserCircle,
+  Send,
+  Sparkles
 } from 'lucide-react'
 
 // Types
@@ -66,6 +70,8 @@ export default function CardioApp() {
   })
   const [riskLevel, setRiskLevel] = useState<RiskLevel>('low')
   const [fastTrackCode, setFastTrackCode] = useState('')
+  const [showAIChat, setShowAIChat] = useState(false)
+  const [showDoctorChat, setShowDoctorChat] = useState(false)
 
   // Toggle symptom selection
   const toggleSymptom = (id: string) => {
@@ -128,9 +134,9 @@ export default function CardioApp() {
   }
 
   // Check if risk factors form is complete
-  const isRiskFactorsComplete = () => {
-      return Boolean(riskFactors.age && riskFactors.smoking && riskFactors.bloodPressure && 
-        riskFactors.familyHistory && riskFactors.previousHeart)
+  const isRiskFactorsComplete = (): boolean => {
+    return Boolean(riskFactors.age) && Boolean(riskFactors.smoking) && Boolean(riskFactors.bloodPressure) && 
+           Boolean(riskFactors.familyHistory) && Boolean(riskFactors.previousHeart)
   }
 
   // Render different screens
@@ -179,8 +185,14 @@ export default function CardioApp() {
             riskLevel={riskLevel}
             fastTrackCode={fastTrackCode}
             onSave={() => setScreen('save')}
+            showAIChat={showAIChat}
+            setShowAIChat={setShowAIChat}
+            showDoctorChat={showDoctorChat}
+            setShowDoctorChat={setShowDoctorChat}
             onRestart={() => {
               setScreen('landing')
+              setShowAIChat(false)
+              setShowDoctorChat(false)
               // Reset state
               setSymptoms(symptoms.map(s => ({ ...s, selected: false })))
               setRiskFactors({
@@ -268,10 +280,7 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
               className="text-center p-6 bg-white/60 backdrop-blur rounded-2xl border border-slate-200 animate-slide-up"
               style={{ animationDelay: `${i * 100}ms` }}
             >
-              {(() => {
-                const ItemIcon = item.icon
-                return <ItemIcon className="w-10 h-10 text-medical-500 mx-auto mb-3" />
-              })()}
+              <item.icon className="w-10 h-10 text-medical-500 mx-auto mb-3" />
               <h3 className="font-semibold text-slate-800 mb-2">{item.title}</h3>
               <p className="text-sm text-slate-600">{item.desc}</p>
             </div>
@@ -693,12 +702,20 @@ function ResultsScreen({
   riskLevel, 
   fastTrackCode,
   onSave,
-  onRestart 
+  onRestart,
+  showAIChat,
+  setShowAIChat,
+  showDoctorChat,
+  setShowDoctorChat
 }: { 
   riskLevel: RiskLevel
   fastTrackCode: string
   onSave: () => void
   onRestart: () => void
+  showAIChat: boolean
+  setShowAIChat: (show: boolean) => void
+  showDoctorChat: boolean
+  setShowDoctorChat: (show: boolean) => void
 }) {
   const config = {
     high: {
@@ -735,6 +752,16 @@ function ResultsScreen({
 
   const current = config[riskLevel]
   const Icon = current.icon
+
+  // If AI Chat is open
+  if (showAIChat) {
+    return <AIChatInterface onClose={() => setShowAIChat(false)} riskLevel={riskLevel} />
+  }
+
+  // If Doctor Chat is open
+  if (showDoctorChat) {
+    return <DoctorChatInterface onClose={() => setShowDoctorChat(false)} />
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -814,15 +841,51 @@ function ResultsScreen({
                 { icon: Brain, title: 'Manage Stress', desc: 'Practice mindfulness & relaxation' }
               ].map((tip, i) => (
                 <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200">
-                  {(() => {
-                    const TipIcon = tip.icon
-                    return <TipIcon className="w-8 h-8 text-emerald-600 mb-3" />
-                  })()}
+                  <tip.icon className="w-8 h-8 text-emerald-600 mb-3" />
                   <h4 className="font-semibold text-slate-800 mb-2">{tip.title}</h4>
                   <p className="text-sm text-slate-600">{tip.desc}</p>
                 </div>
               ))}
             </div>
+          )}
+        </div>
+
+        {/* Chat Options - Available for ALL risk levels */}
+        <div className="mb-8 space-y-4">
+          {/* AI Chat Option - For all risk levels */}
+          <button
+            onClick={() => setShowAIChat(true)}
+            className="w-full p-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl font-semibold transition-smooth shadow-lg hover:shadow-xl flex items-center justify-between group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-xl font-bold mb-1">Chat with AI Health Assistant</h3>
+                <p className="text-blue-100 text-sm">Get instant answers to your health questions</p>
+              </div>
+            </div>
+            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+          </button>
+
+          {/* Doctor Chat Option - Only for HIGH risk */}
+          {riskLevel === 'high' && (
+            <button
+              onClick={() => setShowDoctorChat(true)}
+              className="w-full p-6 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-2xl font-semibold transition-smooth shadow-lg hover:shadow-xl flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-xl">
+                  <UserCircle className="w-8 h-8" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-xl font-bold mb-1">Chat with Dr. Rasul Sultangaziev</h3>
+                  <p className="text-red-100 text-sm">Leading cardiovascular surgeon • Available now</p>
+                </div>
+              </div>
+              <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </button>
           )}
         </div>
 
@@ -842,6 +905,257 @@ function ResultsScreen({
             <Home className="w-5 h-5" />
             Start Over
           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// AI CHAT INTERFACE
+// ============================================
+function AIChatInterface({ onClose, riskLevel }: { onClose: () => void, riskLevel: RiskLevel }) {
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: `Hello! I'm your AI Health Assistant. Based on your ${riskLevel} risk screening results, I'm here to answer any questions you may have about cardiovascular health. How can I help you today?`
+    }
+  ])
+  const [inputMessage, setInputMessage] = useState('')
+
+  const handleSend = () => {
+    if (!inputMessage.trim()) return
+    
+    // Add user message
+    const newMessages = [...messages, { role: 'user', content: inputMessage }]
+    setMessages(newMessages)
+    
+    // Simulate AI response
+    setTimeout(() => {
+      setMessages([...newMessages, {
+        role: 'assistant',
+        content: "Thank you for your question. This is a demo interface showing how AI chat would work. In a real implementation, an AI would provide personalized health guidance based on your screening results and medical knowledge."
+      }])
+    }, 1000)
+    
+    setInputMessage('')
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="max-w-4xl w-full h-[600px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col animate-fade-in">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-3xl">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-white/20 rounded-xl">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">AI Health Assistant</h2>
+              <p className="text-blue-100 text-sm">Powered by medical AI</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[70%] p-4 rounded-2xl ${
+                msg.role === 'user' 
+                  ? 'bg-blue-500 text-white rounded-br-none' 
+                  : 'bg-slate-100 text-slate-800 rounded-bl-none'
+              }`}>
+                <p className="text-sm leading-relaxed">{msg.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div className="p-6 border-t border-slate-200">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Type your question..."
+              className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-blue-500 focus:ring-0"
+            />
+            <button
+              onClick={handleSend}
+              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold transition-smooth flex items-center gap-2"
+            >
+              <Send className="w-5 h-5" />
+              Send
+            </button>
+          </div>
+          <p className="text-xs text-slate-500 mt-3 text-center">
+            This is a demo interface. Real AI would provide medical guidance here.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// DOCTOR CHAT INTERFACE
+// ============================================
+function DoctorChatInterface({ onClose }: { onClose: () => void }) {
+  const [messages, setMessages] = useState([
+    {
+      role: 'doctor',
+      content: "Hello, I'm Dr. Rasul Sultangaziev. I've reviewed your screening results and I'm here to help. What concerns would you like to discuss?"
+    }
+  ])
+  const [inputMessage, setInputMessage] = useState('')
+
+  const handleSend = () => {
+    if (!inputMessage.trim()) return
+    
+    // Add user message
+    const newMessages = [...messages, { role: 'user', content: inputMessage }]
+    setMessages(newMessages)
+    
+    // Simulate doctor response
+    setTimeout(() => {
+      setMessages([...newMessages, {
+        role: 'doctor',
+        content: "Thank you for reaching out. This is a demo interface. In a real implementation, you would be connected to Dr. Sultangaziev for a live consultation about your cardiovascular health."
+      }])
+    }, 1500)
+    
+    setInputMessage('')
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="max-w-5xl w-full flex gap-6 animate-fade-in">
+        {/* Doctor Profile Card */}
+        <div className="w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 h-fit">
+          <div className="text-center mb-6">
+            <div className="w-32 h-32 bg-gradient-to-br from-red-500 to-pink-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <UserCircle className="w-20 h-20 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">Dr. Rasul Sultangaziev</h3>
+            <p className="text-medical-600 font-semibold mb-1">Cardiovascular Surgeon</p>
+            <p className="text-sm text-slate-600">Doctor of Medical Sciences</p>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center gap-3 text-sm">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span className="text-slate-700">Leading surgeon in Kyrgyzstan</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span className="text-slate-700">25+ years of experience</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <span className="text-slate-700">Specialist in complex cases</span>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-2xl p-4 mb-6">
+            <h4 className="font-semibold text-slate-800 mb-3">About Dr. Sultangaziev</h4>
+            <p className="text-sm text-slate-600 leading-relaxed mb-3">
+              One of Kyrgyzstan's leading surgeons, known for handling complex cases where others might give up. His philosophy: "The greatest reward is when a patient forgets about me - because it means they're healthy."
+            </p>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Alongside colleague Dr. Zhanyбек Erkinbaev, he has saved countless lives in situations where survival rates are minimal. Their expertise in reconstructive surgery and emergency interventions is unmatched.
+            </p>
+          </div>
+
+          <div className="space-y-2 text-xs text-slate-500">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              <span>Available now</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Typical response: 2-5 minutes</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Interface */}
+        <div className="flex-1 h-[700px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col">
+          {/* Header */}
+          <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-red-500 to-pink-500 rounded-t-3xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <UserCircle className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Dr. Rasul Sultangaziev</h2>
+                <p className="text-red-100 text-sm flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                  Online now
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[70%] ${msg.role === 'user' ? '' : 'flex gap-3'}`}>
+                  {msg.role === 'doctor' && (
+                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <UserCircle className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                  <div className={`p-4 rounded-2xl ${
+                    msg.role === 'user' 
+                      ? 'bg-red-500 text-white rounded-br-none' 
+                      : 'bg-slate-100 text-slate-800 rounded-tl-none'
+                  }`}>
+                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Input */}
+          <div className="p-6 border-t border-slate-200">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Type your message to the doctor..."
+                className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-red-500 focus:ring-0"
+              />
+              <button
+                onClick={handleSend}
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-smooth flex items-center gap-2"
+              >
+                <Send className="w-5 h-5" />
+                Send
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 mt-3 text-center">
+              This is a demo interface. Real doctor consultation would occur here.
+            </p>
+          </div>
         </div>
       </div>
     </div>
