@@ -135,8 +135,8 @@ export default function CardioApp() {
 
   // Check if risk factors form is complete
   const isRiskFactorsComplete = (): boolean => {
-    return Boolean(riskFactors.age) && Boolean(riskFactors.smoking) && Boolean(riskFactors.bloodPressure) && 
-           Boolean(riskFactors.familyHistory) && Boolean(riskFactors.previousHeart)
+    return (riskFactors.age !== '' && riskFactors.smoking !== '' && riskFactors.bloodPressure !== '' && 
+           riskFactors.familyHistory !== '' && riskFactors.previousHeart !== '') as boolean
   }
 
   // Render different screens
@@ -942,32 +942,32 @@ function AIChatInterface({ onClose, riskLevel }: { onClose: () => void, riskLeve
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="max-w-4xl w-full h-[600px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col animate-fade-in">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl h-[90vh] md:h-[600px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col animate-fade-in">
         {/* Header */}
-        <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-3xl">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-xl">
-              <Sparkles className="w-8 h-8 text-white" />
+        <div className="p-4 md:p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-3xl flex-shrink-0">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="p-2 md:p-3 bg-white/20 rounded-xl">
+              <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white">AI Health Assistant</h2>
-              <p className="text-blue-100 text-sm">Powered by medical AI</p>
+              <h2 className="text-lg md:text-2xl font-bold text-white">AI Health Assistant</h2>
+              <p className="text-blue-100 text-xs md:text-sm">Powered by medical AI</p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
           >
-            <X className="w-6 h-6 text-white" />
+            <X className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] p-4 rounded-2xl ${
+              <div className={`max-w-[85%] md:max-w-[70%] p-3 md:p-4 rounded-2xl ${
                 msg.role === 'user' 
                   ? 'bg-blue-500 text-white rounded-br-none' 
                   : 'bg-slate-100 text-slate-800 rounded-bl-none'
@@ -979,26 +979,26 @@ function AIChatInterface({ onClose, riskLevel }: { onClose: () => void, riskLeve
         </div>
 
         {/* Input */}
-        <div className="p-6 border-t border-slate-200">
-          <div className="flex gap-3">
+        <div className="p-4 md:p-6 border-t border-slate-200 flex-shrink-0">
+          <div className="flex gap-2 md:gap-3">
             <input
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Type your question..."
-              className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-blue-500 focus:ring-0"
+              className="flex-1 px-3 md:px-4 py-2 md:py-3 border-2 border-slate-300 rounded-xl focus:border-blue-500 focus:ring-0 text-sm md:text-base"
             />
             <button
               onClick={handleSend}
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold transition-smooth flex items-center gap-2"
+              className="px-4 md:px-6 py-2 md:py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold transition-smooth flex items-center gap-2"
             >
-              <Send className="w-5 h-5" />
-              Send
+              <Send className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Send</span>
             </button>
           </div>
-          <p className="text-xs text-slate-500 mt-3 text-center">
-            This is a demo interface. Real AI would provide medical guidance here.
+          <p className="text-xs text-slate-500 mt-2 md:mt-3 text-center">
+            Demo interface • Real AI would provide medical guidance
           </p>
         </div>
       </div>
@@ -1017,6 +1017,7 @@ function DoctorChatInterface({ onClose }: { onClose: () => void }) {
     }
   ])
   const [inputMessage, setInputMessage] = useState('')
+  const [showProfile, setShowProfile] = useState(true)
 
   const handleSend = () => {
     if (!inputMessage.trim()) return
@@ -1037,41 +1038,46 @@ function DoctorChatInterface({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="max-w-5xl w-full flex gap-6 animate-fade-in">
-        {/* Doctor Profile Card */}
-        <div className="w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 h-fit">
-          <div className="text-center mb-6">
-            <div className="w-32 h-32 bg-gradient-to-br from-red-500 to-pink-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <UserCircle className="w-20 h-20 text-white" />
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl h-[90vh] flex flex-col lg:flex-row gap-4 animate-fade-in">
+        
+        {/* Doctor Profile Card - Collapsible on Mobile */}
+        <div className={`${showProfile ? 'block' : 'hidden'} lg:block w-full lg:w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 p-4 md:p-6 overflow-y-auto flex-shrink-0`}>
+          <button 
+            onClick={() => setShowProfile(false)}
+            className="lg:hidden absolute top-2 right-2 p-2 hover:bg-slate-100 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          
+          <div className="text-center mb-4">
+            <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-red-500 to-pink-500 rounded-full mx-auto mb-3 flex items-center justify-center">
+              <UserCircle className="w-12 h-12 md:w-16 md:h-16 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-800 mb-2">Dr. Rasul Sultangaziev</h3>
-            <p className="text-medical-600 font-semibold mb-1">Cardiovascular Surgeon</p>
-            <p className="text-sm text-slate-600">Doctor of Medical Sciences</p>
+            <h3 className="text-xl md:text-2xl font-bold text-slate-800 mb-1">Dr. Rasul Sultangaziev</h3>
+            <p className="text-red-600 font-semibold text-sm md:text-base">Cardiovascular Surgeon</p>
+            <p className="text-xs md:text-sm text-slate-600">Doctor of Medical Sciences</p>
           </div>
 
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <div className="space-y-3 mb-4">
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-slate-700">Leading surgeon in Kyrgyzstan</span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               <span className="text-slate-700">25+ years of experience</span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-              <span className="text-slate-700">Specialist in complex cases</span>
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <span className="text-slate-700">Complex cases specialist</span>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-2xl p-4 mb-6">
-            <h4 className="font-semibold text-slate-800 mb-3">About Dr. Sultangaziev</h4>
-            <p className="text-sm text-slate-600 leading-relaxed mb-3">
-              One of Kyrgyzstan's leading surgeons, known for handling complex cases where others might give up. His philosophy: "The greatest reward is when a patient forgets about me - because it means they're healthy."
-            </p>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Alongside colleague Dr. Zhanyбек Erkinbaev, he has saved countless lives in situations where survival rates are minimal. Their expertise in reconstructive surgery and emergency interventions is unmatched.
+          <div className="bg-slate-50 rounded-xl p-3 md:p-4 mb-4">
+            <h4 className="font-semibold text-slate-800 mb-2 text-sm md:text-base">About</h4>
+            <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+              One of Kyrgyzstan's leading cardiovascular surgeons. His philosophy: "The greatest reward is when a patient forgets about me - because it means they're healthy."
             </p>
           </div>
 
@@ -1081,25 +1087,38 @@ function DoctorChatInterface({ onClose }: { onClose: () => void }) {
               <span>Available now</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>Typical response: 2-5 minutes</span>
+              <Clock className="w-3 h-3" />
+              <span>Response: 2-5 min</span>
             </div>
           </div>
+
+          <button
+            onClick={() => setShowProfile(false)}
+            className="lg:hidden w-full mt-4 py-2 bg-red-500 text-white rounded-xl font-semibold"
+          >
+            Start Chat
+          </button>
         </div>
 
         {/* Chat Interface */}
-        <div className="flex-1 h-[700px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col">
+        <div className={`${showProfile ? 'hidden lg:flex' : 'flex'} flex-1 bg-white rounded-3xl shadow-2xl border border-slate-200 flex-col min-h-0`}>
           {/* Header */}
-          <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-red-500 to-pink-500 rounded-t-3xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <UserCircle className="w-8 h-8 text-white" />
+          <div className="p-4 md:p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-red-500 to-pink-500 rounded-t-3xl flex-shrink-0">
+            <button
+              onClick={() => setShowProfile(true)}
+              className="lg:hidden p-2 hover:bg-white/20 rounded-lg mr-2"
+            >
+              <ChevronRight className="w-5 h-5 text-white transform rotate-180" />
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <UserCircle className="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Dr. Rasul Sultangaziev</h2>
-                <p className="text-red-100 text-sm flex items-center gap-2">
+                <h2 className="text-base md:text-xl font-bold text-white">Dr. Rasul Sultangaziev</h2>
+                <p className="text-red-100 text-xs md:text-sm flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                  Online now
+                  Online
                 </p>
               </div>
             </div>
@@ -1107,21 +1126,21 @@ function DoctorChatInterface({ onClose }: { onClose: () => void }) {
               onClick={onClose}
               className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             >
-              <X className="w-6 h-6 text-white" />
+              <X className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[70%] ${msg.role === 'user' ? '' : 'flex gap-3'}`}>
+                <div className={`max-w-[85%] md:max-w-[70%] ${msg.role === 'user' ? '' : 'flex gap-2 md:gap-3'}`}>
                   {msg.role === 'doctor' && (
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                      <UserCircle className="w-6 h-6 text-white" />
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <UserCircle className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     </div>
                   )}
-                  <div className={`p-4 rounded-2xl ${
+                  <div className={`p-3 md:p-4 rounded-2xl ${
                     msg.role === 'user' 
                       ? 'bg-red-500 text-white rounded-br-none' 
                       : 'bg-slate-100 text-slate-800 rounded-tl-none'
@@ -1134,26 +1153,26 @@ function DoctorChatInterface({ onClose }: { onClose: () => void }) {
           </div>
 
           {/* Input */}
-          <div className="p-6 border-t border-slate-200">
-            <div className="flex gap-3">
+          <div className="p-4 md:p-6 border-t border-slate-200 flex-shrink-0">
+            <div className="flex gap-2 md:gap-3">
               <input
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Type your message to the doctor..."
-                className="flex-1 px-4 py-3 border-2 border-slate-300 rounded-xl focus:border-red-500 focus:ring-0"
+                placeholder="Message the doctor..."
+                className="flex-1 px-3 md:px-4 py-2 md:py-3 border-2 border-slate-300 rounded-xl focus:border-red-500 focus:ring-0 text-sm md:text-base"
               />
               <button
                 onClick={handleSend}
-                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-smooth flex items-center gap-2"
+                className="px-4 md:px-6 py-2 md:py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-smooth flex items-center gap-2"
               >
-                <Send className="w-5 h-5" />
-                Send
+                <Send className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="hidden sm:inline">Send</span>
               </button>
             </div>
-            <p className="text-xs text-slate-500 mt-3 text-center">
-              This is a demo interface. Real doctor consultation would occur here.
+            <p className="text-xs text-slate-500 mt-2 md:mt-3 text-center">
+              Demo interface • Real consultation would occur here
             </p>
           </div>
         </div>
